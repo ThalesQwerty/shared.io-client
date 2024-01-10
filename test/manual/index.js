@@ -4,24 +4,31 @@ class Player extends SharedIO.Entity {
     name = "Thales";
     x = 0;
     y = 0;
+
+    constructor(channel, name) {
+        super(channel);
+
+        this.name = name;
+    }
 }
 
 const client = new SharedIO.Client("ws://localhost:3000");
+client.connect();
 
-client.on("open", () => {
+client.on("connect", () => {
     const channel = new SharedIO.Channel(client, "wololo");
-    const player = new Player(channel);
+    channel.join();
 
-    player.on("change", (event) => {
-        console.log("CHANGE", event.changes);
-    })
+    window["channel"] = channel;
 
-    console.log(player, channel);
+    channel.on("join", () => {
+        console.log("JOINED", channel.id);
+    });
 
-    window["player"] = player;
-})
+    channel.on("createEntity", (event) => {
+        console.log("NEW ENTITY", event.entity);
+    });
+});
 
-window["Channel"] = Channel;
-window["Entity"] = Entity;
-
-console.log("hello there");
+window["Entity"] = SharedIO.Entity;
+window["Player"] = Player;

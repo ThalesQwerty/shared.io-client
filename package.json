@@ -8,7 +8,7 @@
         "lint": "eslint --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
         "lint:fix": "eslint --fix --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
         "format": "prettier --write .",
-        "dev": "node ./test/manual/entity.js",
+        "dev": "npx webpack",
         "test": "jest --detectOpenHandles"
     },
     "keywords": [

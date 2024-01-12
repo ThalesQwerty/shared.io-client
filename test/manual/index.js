@@ -6,11 +6,6 @@ window["client"] = client;
 window["SharedIO"] = SharedIO;
 
 /**
- * @type {Element}
- */
-let mySquare = null;
-
-/**
  * @type {Entity}
  */
 let mySquareEntity = null;
@@ -20,6 +15,11 @@ const position = {
     x: Math.random() * 256,
     y: Math.random() * 256
 };
+
+/**
+ * @type {Channel}
+ */
+let channel;
 
 /**
  * @param {Entity} entity 
@@ -36,18 +36,10 @@ async function createSquare(entity) {
     document.body.appendChild(square);
 
     if (entity) {
-        const apply = (e) => {
-            square.style.background = entity.color;
-            square.style.top = entity.position.y + "px";
-            square.style.left = entity.position.x + "px";
-        }
-        apply();
-        entity.on("change", e => apply(e));
+        entity._square = square;
     } else {
-        mySquare = square;
-
-        mySquare.style.top = position.y + "px";
-        mySquare.style.left = position.x + "px";
+        square.style.top = position.y + "px";
+        square.style.left = position.x + "px";
 
         window.addEventListener("keydown", event => {
             controls[event.key] = true;
@@ -58,13 +50,13 @@ async function createSquare(entity) {
         });
 
         await client.connect();
-        const channel = await client.joinChannel("square");
+        channel = await client.joinChannel("square");
 
         channel.on("createEntity", ({ entity }) => {
             if (!entity.owned) createSquare(entity);
         });
 
-        mySquareEntity = await channel.createEntity({ position: {...position}, color });
+        mySquareEntity = await channel.createEntity({ position: {...position}, color, _square: square });
 
         animate();
     }
@@ -78,17 +70,17 @@ function animate() {
     const displacement = squareSpeed * deltaTime;
     lastUpdate = Date.now();
 
-    if (controls.ArrowRight) position.x += displacement;
-    if (controls.ArrowLeft) position.x -= displacement;
+    if (controls.ArrowRight) mySquareEntity.position.x += displacement;
+    if (controls.ArrowLeft) mySquareEntity.position.x -= displacement;
 
-    if (controls.ArrowDown) position.y += displacement;
-    if (controls.ArrowUp) position.y -= displacement;
+    if (controls.ArrowDown) mySquareEntity.position.y += displacement;
+    if (controls.ArrowUp) mySquareEntity.position.y -= displacement;
 
-    mySquare.style.top = position.y + "px";
-    mySquare.style.left = position.x + "px";
-
-    mySquareEntity.position.x = position.x;
-    mySquareEntity.position.y = position.y;
+    channel.entities.forEach(entity => {
+        if (!entity._square) return;
+        entity._square.style.top = entity.position.y + "px";
+        entity._square.style.left = entity.position.x + "px";
+    });
 
     requestAnimationFrame(animate);
 }

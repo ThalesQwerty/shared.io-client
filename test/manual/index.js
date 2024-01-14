@@ -5,60 +5,46 @@ const client = new SharedIO.Client("ws://localhost:3000");
 window["client"] = client;
 window["SharedIO"] = SharedIO;
 
-/**
- * @type {Entity}
- */
-let mySquareEntity = null;
+await client.connect();
 
-const controls = {};
-const position = {
-    x: Math.random() * 256,
-    y: Math.random() * 256
-};
+const channelName = new URLSearchParams(window.location.search).get("channel") ?? "main";
+const channel = await client.joinChannel(channelName);
 
-/**
- * @type {Channel}
- */
-let channel;
+console.log("Joined channel", channelName);
+
+channel.on("createEntity", ({ entity }) => {
+    console.log("created", entity);
+    createSquare(entity);
+});
 
 /**
  * @param {Entity} entity 
  */
-async function createSquare(entity) {
-    const color = "#" + Math.floor(Math.random() * Math.pow(16, 6)).toString(16).padStart(6, "0");
-
+function createSquare(entity) {
     const square = document.createElement("div");
     square.style.width = square.style.height = "32px";
-    square.style.background = color;
     square.style.border = `solid 2px black`;
     square.style.position = "absolute";
+    square.style.background = entity.color;
+    square.style.top = entity.position.y + "px";
+    square.style.left = entity.position.x + "px";
 
     document.body.appendChild(square);
 
-    if (entity) {
-        entity._square = square;
-    } else {
-        square.style.top = position.y + "px";
-        square.style.left = position.x + "px";
+    entity._square = square;
 
+    entity.on("delete", () => {
+        square.remove();
+    });
+
+    if (entity.owned) {
         window.addEventListener("keydown", event => {
-            controls[event.key] = true;
+            entity._controls[event.key] = true;
         });
 
         window.addEventListener("keyup", event => {
-            controls[event.key] = false;
+            entity._controls[event.key] = false;
         });
-
-        await client.connect();
-        channel = await client.joinChannel("square");
-
-        channel.on("createEntity", ({ entity }) => {
-            if (!entity.owned) createSquare(entity);
-        });
-
-        mySquareEntity = await channel.createEntity({ position: {...position}, color, _square: square });
-
-        animate();
     }
 }
 
@@ -70,19 +56,30 @@ function animate() {
     const displacement = squareSpeed * deltaTime;
     lastUpdate = Date.now();
 
-    if (controls.ArrowRight) mySquareEntity.position.x += displacement;
-    if (controls.ArrowLeft) mySquareEntity.position.x -= displacement;
-
-    if (controls.ArrowDown) mySquareEntity.position.y += displacement;
-    if (controls.ArrowUp) mySquareEntity.position.y -= displacement;
-
-    channel.entities.forEach(entity => {
+    for (const entity of channel.entities) {
         if (!entity._square) return;
         entity._square.style.top = entity.position.y + "px";
         entity._square.style.left = entity.position.x + "px";
-    });
+
+        if (entity.owned) {       
+            if (entity._controls.ArrowRight) entity.position.x += displacement;
+            if (entity._controls.ArrowLeft) entity.position.x -= displacement;
+
+            if (entity._controls.ArrowDown) entity.position.y += displacement;
+            if (entity._controls.ArrowUp) entity.position.y -= displacement;
+        }
+    }
 
     requestAnimationFrame(animate);
 }
 
-createSquare();
+await channel.createEntity({
+    color: "#" + Math.floor(Math.random() * Math.pow(16, 6)).toString(16).padStart(6, "0"),
+    position: {
+        x: Math.random() * 256,
+        y: Math.random() * 256
+    },
+    _controls: {}
+});
+
+animate();

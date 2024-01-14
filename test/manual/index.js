@@ -50,11 +50,11 @@ async function joinChannel(channelName) {
 
         if (entity.owned) {
             window.addEventListener("keydown", event => {
-                entity._controls[event.key] = true;
+                entity._controls[event.code] = true;
             });
 
             window.addEventListener("keyup", event => {
-                entity._controls[event.key] = false;
+                entity._controls[event.code] = false;
             });
         }
     }
@@ -73,11 +73,13 @@ async function joinChannel(channelName) {
             entity._square.style.left = entity.position.x + "px";
 
             if (entity.owned) {       
-                if (entity._controls.ArrowRight) entity.position.x += displacement;
-                if (entity._controls.ArrowLeft) entity.position.x -= displacement;
+                const pressed = key => !!entity._controls[key];
 
-                if (entity._controls.ArrowDown) entity.position.y += displacement;
-                if (entity._controls.ArrowUp) entity.position.y -= displacement;
+                if (pressed("ArrowRight") || pressed("KeyD")) entity.position.x += displacement;
+                if (pressed("ArrowLeft") || pressed("KeyA")) entity.position.x -= displacement;
+
+                if (pressed("ArrowDown") || pressed("KeyS")) entity.position.y += displacement;
+                if (pressed("ArrowUp") || pressed("KeyW")) entity.position.y -= displacement;
             }
         }
 

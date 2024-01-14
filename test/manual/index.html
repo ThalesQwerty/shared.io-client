@@ -14,11 +14,11 @@
         <button onclick="joinChannel(document.querySelector('#channel_name_input').value || 'main')">Join!</button>
     </div>
     <div id="loading_channel" style="z-index: 999999; display: none;">
-        <p>Joining channel <span class="channel_name"></span>...</p>
+        <p>Joining channel <strong class="channel_name"></strong>...</p>
     </div>
     <div id="leave_channel" style="z-index: 999999; display: none;">
-        <p>Joined channel <span class="channel_name"></span></p>
-        <p>Use arrow keys to control your square!</p>
+        <p>Channel: <strong class="channel_name"></strong></p>
+        <p>Use arrow keys or WASD to control your square!</p>
         <button onclick="leaveChannel()">Leave</button>
     </div>
 </body>

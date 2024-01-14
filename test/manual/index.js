@@ -22,14 +22,6 @@ async function joinChannel(channelName) {
     console.log("Joined channel", channelName);
 
     channel.on("createEntity", ({ entity }) => {
-        console.log("created", entity);
-        createSquare(entity);
-    });
-
-    /**
-     * @param {Entity} entity 
-     */
-    function createSquare(entity) {
         const square = document.createElement("div");
         square.style.width = square.style.height = "32px";
         square.style.border = `solid 2px black`;
@@ -57,7 +49,7 @@ async function joinChannel(channelName) {
                 entity._controls[event.code] = false;
             });
         }
-    }
+    });
 
     const squareSpeed = 128;
     let lastUpdate = Date.now();

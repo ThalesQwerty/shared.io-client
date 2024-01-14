@@ -7,5 +7,19 @@
     <script type="module" src="./dist/main.js"></script>
 </head>
 <body>
+    <div id="squares"></div>
+    <div id="join_channel" style="z-index: 999999">
+        <p>Type channel name:</p>
+        <input type="text" value="main" id="channel_name_input" placeholder="main" />
+        <button onclick="joinChannel(document.querySelector('#channel_name_input').value || 'main')">Join!</button>
+    </div>
+    <div id="loading_channel" style="z-index: 999999; display: none;">
+        <p>Joining channel <span class="channel_name"></span>...</p>
+    </div>
+    <div id="leave_channel" style="z-index: 999999; display: none;">
+        <p>Joined channel <span class="channel_name"></span></p>
+        <p>Use arrow keys to control your square!</p>
+        <button onclick="leaveChannel()">Leave</button>
+    </div>
 </body>
 </html>

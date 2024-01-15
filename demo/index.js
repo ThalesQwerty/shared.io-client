@@ -1,4 +1,4 @@
-import SharedIO from "../../lib/index.js";
+import SharedIO from "../lib/index.js";
 
 const client = new SharedIO.Client("ws://localhost:3000");
 

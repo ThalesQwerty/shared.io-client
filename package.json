@@ -9,7 +9,7 @@
         "lint:fix": "eslint --fix --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
         "format": "prettier --write .",
         "dev": "npx webpack",
-        "test": "jest --detectOpenHandles"
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
     },
     "keywords": [
         "socket",
@@ -21,6 +21,7 @@
     "author": "ThalesQwerty",
     "license": "ISC",
     "devDependencies": {
+        "@babel/preset-env": "^7.23.8",
         "eslint": "^8.45.0",
         "webpack": "^5.89.0",
         "webpack-cli": "^5.1.4"

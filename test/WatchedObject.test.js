@@ -66,7 +66,7 @@ describe("WatchedObject", () => {
         });
     });
 
-    test.only("Change event - objects", async () => {
+    test("Change event - objects", async () => {
         let changeEvent;
 
         const { proxy, watcher } = new WatchedObject({

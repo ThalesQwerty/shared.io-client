@@ -9,116 +9,202 @@ function delay(milliseconds = 0) {
 }
 
 describe("WatchedObject", () => {
-    test("Change event - primitives", async () => {
-        let changeEvent;
+    describe("Write event", () => {
+        test("Primitives", () => {
+            let writeEvent;
 
-        const { proxy, watcher } = new WatchedObject({
-            a: 1,
-            b: 2,
-            c: 3,
-            ignoredKey: 0
-        }, ["ignoredKey"]);
+            const { proxy, watcher } = new WatchedObject({
+                a: 1,
+                b: 2,
+                c: 3,
+                ignoredKey: 0
+            }, ["ignoredKey"]);
 
-        watcher.on("change", event => {
-            changeEvent = event;
+            watcher.on("write", event => {
+                writeEvent = event;
+            });
+
+            proxy.ignoredKey = 1;
+            expect(writeEvent).toBeUndefined();
+
+            proxy.a = 10;
+            expect(writeEvent).toEqual({ propertyName: "a", oldValue: 1, newValue: 10 });
+
+            proxy.b = 20;
+            expect(writeEvent).toEqual({ propertyName: "b", oldValue: 2, newValue: 20 });
+
+            proxy.c = 30;
+            expect(writeEvent).toEqual({ propertyName: "c", oldValue: 3, newValue: 30 });
         });
 
-        proxy.a = 1;
-        proxy.b = 2;
-        proxy.c = 3;
-        await delay();
+        test("Objects", () => {
+            let writeEvent;
 
-        expect(changeEvent).toBeUndefined();
+            const { proxy, watcher } = new WatchedObject({
+                obj: {
+                    x: 0,
+                    y: 1
+                }
+            });
 
-        proxy.ignoredKey = 3;
-        await delay();
+            watcher.on("write", event => {
+                writeEvent = event;
+            });
 
-        expect(changeEvent).toBeUndefined();
+            const oldObj = proxy.obj;
 
-        proxy.a = 10;
-        await delay();
+            proxy.obj.y = 0;
+            expect(writeEvent).toEqual({ propertyName: "obj", oldValue: oldObj, newValue: oldObj });
 
-        expect(changeEvent).toBeDefined();
-        expect(changeEvent.newValues).toEqual({
-            a: 10
-        });
+            const newObj = proxy.obj = {
+                x: 1,
+                y: 0
+            };
+            expect(writeEvent).toEqual({ propertyName: "obj", oldValue: oldObj, newValue: newObj });
 
-        proxy.a = 100;
-        proxy.b = 200;
-        proxy.c = 300;
-        await delay();
+            writeEvent = undefined;
+            
+            oldObj.z = -1;
+            expect(writeEvent).toBeUndefined();
 
-        expect(changeEvent).toBeDefined();
-        expect(changeEvent.newValues).toEqual({
-            a: 100,
-            b: 200,
-            c: 300
-        });
-
-        proxy.ignoredKey = 400;
-        await delay();
-
-        expect(changeEvent).toBeDefined();
-        expect(changeEvent.newValues).toEqual({
-            a: 100,
-            b: 200,
-            c: 300
+            proxy.obj.z = -1;
+            expect(writeEvent).toEqual({ propertyName: "obj", oldValue: newObj, newValue: newObj });
         });
     });
 
-    test("Change event - objects", async () => {
-        let changeEvent;
+    describe("Change event", () => {
+        test("Primitives", async () => {
+            let changeEvent;
 
-        const { proxy, watcher } = new WatchedObject({
-            obj: {
-                x: 0,
-                y: 0
-            },
-            arr: [0, 1, 2]
+            const { proxy, watcher } = new WatchedObject({
+                a: 1,
+                b: 2,
+                c: 3,
+                ignoredKey: 0
+            }, ["ignoredKey"]);
+
+            watcher.on("change", event => {
+                changeEvent = event;
+            });
+
+            proxy.a = 1;
+            proxy.b = 2;
+            proxy.c = 3;
+            await delay();
+
+            expect(changeEvent).toBeUndefined();
+
+            proxy.ignoredKey = 3;
+            await delay();
+
+            expect(changeEvent).toBeUndefined();
+
+            proxy.a = 10;
+            await delay();
+
+            expect(changeEvent).toBeDefined();
+            expect(changeEvent.newValues).toEqual({
+                a: 10
+            });
+
+            proxy.a = 100;
+            proxy.b = 200;
+            proxy.c = 300;
+            await delay();
+
+            expect(changeEvent).toBeDefined();
+            expect(changeEvent.newValues).toEqual({
+                a: 100,
+                b: 200,
+                c: 300
+            });
+
+            proxy.ignoredKey = 400;
+            await delay();
+
+            expect(changeEvent).toBeDefined();
+            expect(changeEvent.newValues).toEqual({
+                a: 100,
+                b: 200,
+                c: 300
+            });
         });
 
-        watcher.on("change", event => {
-            changeEvent = event;
-        });
+        test("Objects", async () => {
+            let changeEvent;
 
-        proxy.obj.x = 0;
-        proxy.obj.y = 0;
-        await delay();
+            const { proxy, watcher } = new WatchedObject({
+                obj: {
+                    x: 0,
+                    y: 0
+                },
+                arr: [0, 1, 2]
+            });
 
-        expect(changeEvent).toBeUndefined();
+            watcher.on("change", event => {
+                changeEvent = event;
+            });
 
-        proxy.obj = {
-            x: 0,
-            y: 1
-        };
-        await delay();
+            proxy.obj.x = 0;
+            proxy.obj.y = 0;
+            await delay();
 
-        expect(changeEvent).toBeDefined();
-        expect(changeEvent.newValues).toEqual({
-            obj: {
+            expect(changeEvent).toBeUndefined();
+
+            proxy.obj = {
                 x: 0,
                 y: 1
-            }
+            };
+            await delay();
+
+            expect(changeEvent).toBeDefined();
+            expect(changeEvent.newValues).toEqual({
+                obj: {
+                    x: 0,
+                    y: 1
+                }
+            });
+
+            proxy.obj.x = 1;
+            await delay();
+
+            expect(changeEvent).toBeDefined();
+            expect(changeEvent.newValues).toEqual({
+                obj: {
+                    x: 1,
+                    y: 1
+                }
+            });
+
+            proxy.arr.push(3);
+            proxy.arr.shift();
+            await delay();
+
+            expect(changeEvent).toBeDefined();
+            expect(changeEvent.newValues).toEqual({
+                arr: [1, 2, 3]
+            });
         });
+    });
 
-        proxy.obj.x = 1;
-        await delay();
+    describe("Call event", () => {
+        test("Functions", () => {
+            let callEvent;
 
-        expect(changeEvent).toBeDefined();
-        expect(changeEvent.newValues).toEqual({
-            obj: {
-                x: 1,
-                y: 1
-            }
-        });
+            const { proxy, watcher } = new WatchedObject({
+                sum(a, b) {
+                    return a + b;
+                }
+            });
 
-        proxy.arr.push(3);
-        proxy.arr.shift();
-        await delay();
+            watcher.on("call", event => {
+                callEvent = event;
+            });
 
-        expect(changeEvent).toBeDefined();
-        expect(changeEvent.newValues).toEqual({
-            arr: [1, 2, 3]
+            const result = proxy.sum(7, 5);
+
+            expect(result).toBe(12);
+            expect(callEvent).toEqual({ methodName: "sum", parameters: [7, 5], returnedValue: 12 });
         });
     });
 });

@@ -1,12 +1,5 @@
 import { WatchedObject } from "../lib/models/WatchedObject";
-
-function delay(milliseconds = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, milliseconds);
-    });
-}
+import { delay } from "./helpers/delay";
 
 describe("WatchedObject", () => {
     describe("Write event", () => {

@@ -1,6 +1,7 @@
 /node_modules
 /**/dist
-/test/manual
+/test
+/demo
 
 webpack.config.js
 webpack.config.cjs

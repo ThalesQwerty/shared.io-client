@@ -78,7 +78,7 @@ async function joinChannel(channelName) {
         requestAnimationFrame(animate);
     }
 
-    await channel.createEntity({
+    await channel.createEntity("Square", {
         color: "#" + Math.floor(Math.random() * Math.pow(16, 6)).toString(16).padStart(6, "0"),
         position: {
             x: Math.random() * 256,

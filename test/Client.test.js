@@ -167,6 +167,7 @@ describe("Client", () => {
                     channelId: "test",
                     params: {
                         entityId: "entity",
+                        type: "Test",
                         values: {
                             a: 1,
                             b: 2
@@ -179,6 +180,7 @@ describe("Client", () => {
                 expect(channel.entities).toHaveLength(1);
                 expect(entity).toBeDefined();
                 expect(channel.entities).toContain(entity);
+                expect(entity.type).toBe("Test");
                 expect(entity.owned).toBe(false);
                 expect(entity.a).toBe(1);
                 expect(entity.b).toBe(2);
@@ -188,6 +190,7 @@ describe("Client", () => {
                     channelId: "test",
                     params: {
                         entityId: "entity",
+                        type: "Test",
                         values: {
                             a: 3
                         }
@@ -198,6 +201,7 @@ describe("Client", () => {
 
                 expect(channel.entities).toHaveLength(1);
                 expect(channel.entities).toContain(entity);
+                expect(entity.type).toBe("Test");
                 expect(entity.owned).toBe(false);
                 expect(entity.a).toBe(3);
                 expect(entity.b).toBe(2);
@@ -213,7 +217,7 @@ describe("Client", () => {
                     createdEntity = event.entity;
                 })
 
-                channel.createEntity({
+                channel.createEntity("Test", {
                     a: 1,
                     b: 2
                 }); 
@@ -222,6 +226,7 @@ describe("Client", () => {
                 
                 const entity = channel.entities[0];
                 expect(entity).toBeDefined();
+                expect(entity.type).toBe("Test");
                 expect(entity.owned).toBe(true);
                 expect(entity.active).toBe(false);
                 expect(entity.a).toBe(1);
@@ -233,6 +238,7 @@ describe("Client", () => {
                     channelId: "test",
                     params: {
                         entityId: entity.id,
+                        type: "Test",
                         values: {
                             a: 1,
                             b: 2
@@ -242,6 +248,7 @@ describe("Client", () => {
 
                 await delay(50);
 
+                expect(entity.type).toBe("Test");
                 expect(entity.owned).toBe(true);
                 expect(entity.active).toBe(true);
                 expect(entity.a).toBe(1);
